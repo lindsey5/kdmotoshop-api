@@ -9,11 +9,10 @@ app.register_blueprint(predict_bp)
 
 # Allow multiple origins
 CORS(app, resources={
-    r"/*": {
-        "origins": [
-            "http://localhost:5173", 
-            "https://kdmotoshop.onrender.com", 
-        ]
+    r"/predict/*": {
+        "origins": ["http://localhost:5173", "https://kdmotoshop.onrender.com"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
     }
 })
 
