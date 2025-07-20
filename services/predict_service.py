@@ -155,7 +155,6 @@ def forecast_items_qty_sold():
     }).reset_index().rename(columns={'DATE': 'TRANSACTION_COUNT'})
 
     monthly_data['QUARTER'] = monthly_data['MONTH'].apply(lambda x: ((x - 1) // 3) + 1)
-    monthly_data.head()
     data = create_global_features(monthly_data)
 
     predictions = []
