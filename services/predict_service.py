@@ -129,13 +129,6 @@ def create_global_features(data):
 
     return data_with_lags
 
-feature_columns = [
-    'ITEM_ENCODED','TIME_IDX','MONTH','QUARTER',
-    'QTY_LAG1','QTY_LAG2','QTY_LAG3',
-    'QTY_ROLLING_3','QTY_ROLLING_6','QTY_RELATIVE',
-    'MONTH_SIN','MONTH_COS','QUARTER_SIN','QUARTER_COS',
-]
-
 def forecast_items_qty_sold():
     df = loadDataset()
     df['MONTH'] = df['DATE'].dt.month
@@ -143,6 +136,7 @@ def forecast_items_qty_sold():
 
     monthly_data = df.groupby(['ITEM DESCRIPTION', 'YEAR', 'MONTH']).agg({
         'QTY': 'sum',
+        'SOLD PRICE': 'mean',
     }).reset_index()
 
     monthly_data['QUARTER'] = monthly_data['MONTH'].apply(lambda x: ((x - 1) // 3) + 1)
@@ -153,6 +147,13 @@ def forecast_items_qty_sold():
     current_month = today.month
     current_year = today.year
     current_quarter = ((current_month - 1) // 3) + 1
+
+    feature_columns = [
+        'ITEM_ENCODED','TIME_IDX','MONTH','QUARTER',
+        'QTY_LAG1','QTY_LAG2','QTY_LAG3',
+        'QTY_ROLLING_3','QTY_ROLLING_6','QTY_RELATIVE',
+        'MONTH_SIN','MONTH_COS','QUARTER_SIN','QUARTER_COS',
+    ]
 
     predictions = []
 
@@ -187,7 +188,9 @@ def forecast_items_qty_sold():
 
         predictions.append({
             'item': str(item),
-            'predicted_qty': round(pred, 2),
+            'price': round(item_df['SOLD PRICE'].iloc[-1], 2),
+            'predicted_qty': round(pred, 0),
+            'sales': round(item_df['SOLD PRICE'].iloc[-1] * round(pred, 0), 2),
             'months_of_data': int(len(item_df)),
             'last_month_qty': int(item_df['QTY'].iloc[-1]),
             'predicted_month': f"{current_month:02d}",
