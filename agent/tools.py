@@ -3,6 +3,8 @@ import requests
 from typing import Optional, Dict, Any
 import os
 
+url = os.environ.get("URL")
+
 def _format_product(product: Dict[str, Any], index: int) -> str:
     product_name = product.get('product_name', 'N/A')
     category = product.get('category', 'N/A')
@@ -44,7 +46,7 @@ def search_product_api(
     max_price: Optional[float] = None,
 ) -> str:
     """
-    Search for products using the KD Moto Shop API.
+    Use to search products.
     
     Args:
         query: Search term for products
@@ -57,7 +59,6 @@ def search_product_api(
     Returns:
         Formatted string with product details
     """
-    url = os.environ.get("URL")
     endpoint = f"{url}/api/product/reserved?visibility=Published"
     
     params = {
@@ -104,4 +105,32 @@ def search_product_api(
     except Exception as e:
         return f"Error: {str(e)}"
     
-tools = [search_product_api]
+def get_categories() -> str:
+    """Use to get categories"""
+    try:
+        endpoint = f"{url}/api/category"
+        response = requests.get(endpoint, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            categories = data.get('categories', data.get('data', []))
+
+            if not categories:
+                return "No categories found"
+            
+            result = "" 
+            
+            for i, category in enumerate(categories, 1):
+                category_name = category.get('category_name')
+                result += f"\n{category_name}"
+
+            return result
+            
+        else:
+            return f"API failed with status {response.status_code}"
+            
+    except Exception as e:
+        return f"Error: {str(e)}"
+    
+tools = [search_product_api, get_categories]
