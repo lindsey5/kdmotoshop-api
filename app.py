@@ -6,12 +6,13 @@ import os
 
 app = Flask(__name__)
 
-url = os.environ.get("ORIGIN")
-
 # CORS config
 CORS(app, resources={
     r"/*": {
-        "origins": url,
+        "origins":  [
+            "http://localhost:5173",
+            "https://kdmotoshop.onrender.com"
+        ],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
