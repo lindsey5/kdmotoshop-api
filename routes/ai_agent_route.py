@@ -1,13 +1,12 @@
 from flask import Blueprint, request, jsonify
+from flask_cors import cross_origin
 from agent.agent import agent_executor, config
-from utils.helpers import _build_cors_preflight_response, _corsify_actual_response
 
 agent_bp = Blueprint("agent", __name__)
 
 @agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
+@cross_origin()
 def chat():
-    if request.method == 'OPTIONS':
-        return _build_cors_preflight_response()
     user_message = request.json.get("message")
     input_message = {"role": "user", "content": user_message}
 
@@ -20,4 +19,4 @@ def chat():
         if metadata["langgraph_node"] == "agent" and (text := step.text()):
             result += text
 
-    return _corsify_actual_response(jsonify({"response": result}))
+    return jsonify({"response": result})
