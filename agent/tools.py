@@ -46,7 +46,7 @@ def search_product_api(
     max_price: Optional[float] = None,
 ) -> str:
     """
-    Use to search products.
+    Search for products using the KD Moto Shop API.
     
     Args:
         query: Search term for products
