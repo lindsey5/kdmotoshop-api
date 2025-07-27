@@ -15,68 +15,77 @@ def loadDataset():
     sheet_name = 'E-COM January-June 2025 Sales'
     return pd.read_excel(file_path, sheet_name=sheet_name)
 
-# Forecasting function
-def forecast_future(model, daily_sales, n_days=30):
-    last_date = daily_sales['DATE'].iloc[-1]
-    future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=n_days, freq='D')
-    
-    recent_sales = daily_sales['SOLD PRICE'].values.copy()
-    recent_ema = daily_sales['ema_7'].iloc[-1]
-    alpha = 2 / (7 + 1)  # Smoothing factor for EMA
+def forecast_next_days(model, historical_df, num_days=30):
+    """
+    Forecast next `num_days` using trained model and past features.
+    """
+    forecast_dates = pd.date_range(start=historical_df['DATE'].iloc[-1] + pd.Timedelta(days=1), periods=num_days)
+    forecast_df = []
 
-    future_predictions = []
+    temp_df = historical_df.copy()
 
-    for i, future_date in enumerate(future_dates):
-        dayofweek = future_date.dayofweek
-        day = future_date.day
-        month = future_date.month
+    for date in forecast_dates:
+        dayofweek = date.dayofweek
+        day = date.day
+        month = date.month
         is_weekend = 1 if dayofweek >= 5 else 0
-        
-        lag_1 = recent_sales[-1] if len(recent_sales) >= 1 else 0
-        lag_2 = recent_sales[-2] if len(recent_sales) >= 2 else 0
-        lag_3 = recent_sales[-3] if len(recent_sales) >= 3 else 0
-        lag_7 = recent_sales[-7] if len(recent_sales) >= 7 else recent_sales[-1]
-        rolling_mean_7 = np.mean(recent_sales[-7:]) if len(recent_sales) >= 7 else np.mean(recent_sales)
-        rolling_std_7 = np.std(recent_sales[-7:]) if len(recent_sales) >= 7 else 0
-        diff_7 = lag_1 - lag_7 if len(recent_sales) >= 7 else 0
 
-        # Update EMA manually
-        ema_7 = (lag_1 * alpha) + (recent_ema * (1 - alpha))
+        lag_1 = temp_df['SOLD PRICE'].iloc[-1]
+        lag_2 = temp_df['SOLD PRICE'].iloc[-2]
+        lag_3 = temp_df['SOLD PRICE'].iloc[-3]
+        lag_7 = temp_df['SOLD PRICE'].iloc[-7] if len(temp_df) >= 7 else temp_df['SOLD PRICE'].mean()
+        lag_30 = temp_df['SOLD PRICE'].iloc[-30] if len(temp_df) >= 30 else temp_df['SOLD PRICE'].mean()
 
-        features = np.array([[dayofweek, day, month, is_weekend,
-                              lag_1, lag_2, lag_3, lag_7,
-                              rolling_mean_7, rolling_std_7,
-                              diff_7, ema_7]])
 
-        prediction = model.predict(features)[0]
-        future_predictions.append(prediction)
-        
-        recent_sales = np.append(recent_sales, prediction)
-        recent_ema = ema_7  # update EMA for next day
+        rolling = temp_df['SOLD PRICE'].rolling(window=7, min_periods=1)
+        rolling_mean_7 = rolling.mean().iloc[-1]
 
-    return future_dates, future_predictions
+        rolling = temp_df['SOLD PRICE'].rolling(window=30, min_periods=1)
+        rolling_mean_30 = rolling.mean().iloc[-1]
+
+        diff_30 = temp_df['SOLD PRICE'].iloc[-1] - temp_df['SOLD PRICE'].iloc[-31] if len(temp_df) >= 31 else 0
+
+        features = np.array([
+            dayofweek, day, month, is_weekend,
+            lag_1, lag_2, lag_3, lag_7,
+            lag_30,
+            rolling_mean_7,
+            rolling_mean_30,
+            diff_30,
+        ]).reshape(1, -1)
+
+        predicted_price = model.predict(features)[0]
+        predicted_price = max(predicted_price, 0)  # Avoid negative predictions
+
+        # Append prediction
+        forecast_df.append({'DATE': date, 'PREDICTED_SALES': predicted_price})
+
+        # Append to temp_df for next lag feature generation
+        temp_df = pd.concat([
+            temp_df,
+            pd.DataFrame([{'DATE': date, 'SOLD PRICE': predicted_price}])
+        ], ignore_index=True)
+
+    forecast_df = pd.DataFrame(forecast_df)
+    return forecast_df
 
 
 def predict_future_sales():
     try:
         df = loadDataset()
 
-        df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
-        df = df.dropna(subset=['DATE', 'SOLD PRICE'])
-        daily_sales = df.groupby(df['DATE'].dt.date)['SOLD PRICE'].sum().reset_index()
-        daily_sales.columns = ['DATE', 'SOLD PRICE']
-        daily_sales['DATE'] = pd.to_datetime(daily_sales['DATE'])
-        daily_sales = daily_sales.sort_values('DATE').reset_index(drop=True)
-
-        # Compute 7-day EMA
-        daily_sales['ema_7'] = daily_sales['SOLD PRICE'].ewm(span=7, adjust=False).mean()
+        daily_sales = df.groupby('DATE')['SOLD PRICE'].sum().reset_index()
+        daily_sales.set_index('DATE', inplace=True)
+        daily_sales.sort_index(inplace=True)
 
         # Forecast future sales
-        future_dates, future_preds = forecast_future(model, daily_sales, n_days=30)
+        forecast_results = forecast_next_days(model, daily_sales.reset_index(), num_days=30)
 
         return {
-            'forecast':[float(pred) for pred in future_preds],
-            'dates': future_dates.strftime('%Y-%m-%d').tolist(),
+            'forecast':[float(pred) for pred in forecast_results['PREDICTED_SALES']],
+            'forecast_dates': forecast_results['DATE'].dt.strftime('%Y-%m-%d').tolist(),
+            'actual_sales' : [float(sales) for sales in daily_sales['SOLD PRICE']],
+            'dates' :  daily_sales.reset_index()['DATE'].dt.strftime('%Y-%m-%d').tolist(),
             'success': True,
         }
     except Exception as e:

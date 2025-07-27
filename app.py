@@ -1,17 +1,17 @@
 from flask import Flask
 from routes.predict_route import predict_bp
+from routes.ai_agent_route import agent_bp
 from flask_cors import CORS
 import os
 
 app = Flask(__name__)
 
+url = os.environ.get("ORIGIN")
+
 # CORS config
 CORS(app, resources={
-    r"/predict/*": {
-        "origins": [
-            "http://localhost:5173",
-            "https://kdmotoshop.onrender.com"
-        ],
+    r"/*": {
+        "origins": url,
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
@@ -19,11 +19,7 @@ CORS(app, resources={
 
 # Register blueprint
 app.register_blueprint(predict_bp)
-
-# This route must be outside the __main__ block
-@app.route('/')
-def home():
-    return 'Hello from KDMotoshop on Render!'
+app.register_blueprint(agent_bp)
 
 # This block only runs locally, not in production
 if __name__ == '__main__':
