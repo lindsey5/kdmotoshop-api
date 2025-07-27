@@ -19,4 +19,4 @@ def chat():
         if metadata["langgraph_node"] == "agent" and (text := step.text()):
             result += text
 
-    return jsonify({"response": result})
+    return jsonify({"response": result, "success": True })
