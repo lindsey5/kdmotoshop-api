@@ -8,15 +8,15 @@ app = Flask(__name__)
 
 # CORS config
 CORS(app, resources={
-    r"/api/*": {
-        "origins":  [
+    r"/*": {
+        "origins": [
             "http://localhost:5173",
             "https://kdmotoshop.onrender.com"
         ],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
-})
+}, supports_credentials=True)
 
 # Register blueprint
 app.register_blueprint(predict_bp)
