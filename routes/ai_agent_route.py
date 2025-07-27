@@ -3,7 +3,7 @@ from agent.agent import agent_executor, config
 
 agent_bp = Blueprint("agent", __name__)
 
-@agent_bp.route("/chat", methods=["POST"])
+@agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
 def chat():
     user_message = request.json.get("message")
     input_message = {"role": "user", "content": user_message}

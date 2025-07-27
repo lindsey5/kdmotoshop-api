@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # CORS config
 CORS(app, resources={
-    r"/*": {
+    r"/api/*": {
         "origins":  [
             "http://localhost:5173",
             "https://kdmotoshop.onrender.com"
