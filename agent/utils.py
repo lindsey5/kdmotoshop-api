@@ -20,7 +20,7 @@ def create_pdf_vectorstore(pdf_path: str) -> FAISS:
     return vectorstore
 
 def create_db_vectorstore(docs: List[Dict[str, Any]]) -> Chroma:
-    texts = [_format_product(doc, i) for i, doc in enumerate(docs)]
+    texts = [_format_product(doc) for _, doc in enumerate(docs)]
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     docs_split = splitter.create_documents(texts)
     # Embed and store in Chroma (in-memory or persistent)
@@ -41,7 +41,7 @@ def create_rag_chain(vectorstore: FAISS):
     return qa_chain
 
 
-def _format_product(product: Dict[str, Any], index: int) -> str:
+def _format_product(product: Dict[str, Any]) -> str:
     product_name = product.get('product_name', 'N/A')
     category = product.get('category', 'N/A')
     rating = product.get('rating', 0)
@@ -52,7 +52,7 @@ def _format_product(product: Dict[str, Any], index: int) -> str:
       stock = product.get('stock', 0)
       stock_text = f"{stock} units" if stock > 0 else "Out of stock"
 
-    result = f"{index}: {product_name}\n"
+    result = f"{product_name}\n"
     result += f"Category: {category}\n"
 
     if product.get('product_type') == 'Single':
