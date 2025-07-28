@@ -6,7 +6,7 @@ url = os.environ.get("URL")
 
 @tool
 def ask_question(question: str) -> str:
-    """Ask a question"""
+    """Use this to answer customer questions"""
     result = qa_chain({"query": question})
     return result["result"]
 
