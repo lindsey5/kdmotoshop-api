@@ -11,10 +11,10 @@ def ask_question(question: str) -> str:
     return result["result"]
 
 @tool
-def search_product(query: str) -> str:
-    """Search or filter for products from the KD Moto Shop inventory."""
+def products_tool(query: str) -> str:
+    """Search, sort or filter for products from the KD Moto Shop inventory."""
     result = db_chain({ "query" : query })
     return result["result"]
     
     
-tools = [search_product, ask_question]
+tools = [products_tool, ask_question]
