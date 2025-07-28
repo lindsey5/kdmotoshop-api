@@ -2,6 +2,7 @@ from langchain.tools import tool
 import requests
 from typing import Optional, Dict, Any
 import os
+from .config import qa_chain
 
 url = os.environ.get("URL")
 
@@ -35,6 +36,12 @@ def _format_product(product: Dict[str, Any], index: int) -> str:
     
     result += "\n"
     return result
+
+@tool
+def ask_question(question: str) -> str:
+    """Ask a question based on the PDF"""
+    result = qa_chain({"query": question})
+    return result["result"]
 
 @tool
 def search_product_api(
@@ -133,4 +140,4 @@ def get_categories() -> str:
     except Exception as e:
         return f"Error: {str(e)}"
     
-tools = [search_product_api, get_categories]
+tools = [search_product_api, get_categories, ask_question]

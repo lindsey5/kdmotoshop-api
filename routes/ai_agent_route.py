@@ -1,14 +1,22 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
-from agent.agent import agent_executor, config
+from agent.agent import agent_executor
+import uuid
 
 agent_bp = Blueprint("agent", __name__)
 
 @agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
 @cross_origin()
 def chat():
+    # Get thread_id from request or generate a new one
+    thread_id = request.json.get("thread_id") or str(uuid.uuid4())
     user_message = request.json.get("message")
     input_message = {"role": "user", "content": user_message}
+    config = {
+        "configurable": {
+            "thread_id": thread_id
+        }
+    }
 
     result = ""
     for step, metadata in agent_executor.stream(
@@ -19,4 +27,4 @@ def chat():
         if metadata["langgraph_node"] == "agent" and (text := step.text()):
             result += text
 
-    return jsonify({"response": result, "success": True })
+    return jsonify({"response": result, "success": True, "thread_id" : thread_id })

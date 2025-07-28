@@ -22,9 +22,3 @@ agent_executor = create_react_agent(
     prompt=prompt,
     checkpointer=memory,
 )
-
-config = {
-    "configurable": {
-        "thread_id": "customer-session-1"
-    }
-}
