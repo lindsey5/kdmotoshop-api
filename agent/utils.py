@@ -23,7 +23,6 @@ def create_db_vectorstore(docs: List[Dict[str, Any]]) -> Chroma:
     texts = [_format_product(doc, i) for i, doc in enumerate(docs)]
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     docs_split = splitter.create_documents(texts)
-
     # Embed and store in Chroma (in-memory or persistent)
     embedding = GoogleGenerativeAIEmbeddings(model="models/embedding-001") 
     vectorstore = Chroma.from_documents(docs_split, embedding)

@@ -6,15 +6,13 @@ url = os.environ.get("URL")
 
 @tool
 def ask_question(question: str) -> str:
-    """Ask a question based on the PDF"""
+    """Ask a question"""
     result = qa_chain({"query": question})
     return result["result"]
 
 @tool
 def search_product(query: str) -> str:
-    """
-    Search for products from the KD Moto Shop inventory.
-    """
+    """Search or filter for products from the KD Moto Shop inventory."""
     result = db_chain({ "query" : query })
     return result["result"]
     
