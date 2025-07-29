@@ -6,7 +6,7 @@ import uuid
 agent_bp = Blueprint("agent", __name__)
 
 @agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
-@cross_origin(origins=["https://kdmotoshop.onrender.com", "http://localhost:5173"]) 
+@cross_origin(origins=["https://kdmotoshop.onrender.com", "http://localhost:5173"], allow_headers=['Content-Type', 'Authorization']) 
 def chat():
     if request.method == 'OPTIONS':
         # Preflight request
