@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, make_response, request, jsonify
 from flask_cors import cross_origin
 from agent.agent import agent_executor
 import uuid
@@ -6,7 +6,16 @@ import uuid
 agent_bp = Blueprint("agent", __name__)
 
 @agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
+@cross_origin()
 def chat():
+    if request.method == 'OPTIONS':
+        # Preflight request
+        response = make_response()
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin')
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response, 200
+
     # Get thread_id from request or generate a new one
     thread_id = request.json.get("thread_id") or str(uuid.uuid4())
     user_message = request.json.get("message")
