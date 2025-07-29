@@ -5,7 +5,6 @@ from services.predict_service import forecast_items_qty_sold, predict_future_sal
 predict_bp = Blueprint('predict', __name__)
 
 @predict_bp.route('/api/predict', methods=['GET', 'OPTIONS'])
-@cross_origin()
 def predict():
     forecast_data = predict_future_sales()
     return jsonify(forecast_data)
