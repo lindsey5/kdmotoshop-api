@@ -1,7 +1,8 @@
-from flask import Flask, request
+from flask import Flask, jsonify
 from routes.predict_route import predict_bp
 from routes.ai_agent_route import agent_bp
 from flask_cors import CORS
+from agent.config import model
 import os
 
 app = Flask(__name__)
@@ -16,10 +17,14 @@ CORS(app,
 app.register_blueprint(predict_bp)
 app.register_blueprint(agent_bp)
 
-# This route must be outside the __main__ block
-@app.route('/run', methods=["POST"])
-def home():
-    return 'Hello from KDMotoshop on Render!'
+@app.route("/run", methods=["POST"])
+def run():
+    response = model.invoke([{"role": "user", "content": "H"}])
+    response.text()
+
+    print(f"Agent response: {response}")
+
+    return jsonify({ "response" : response.content })
 
 # This block only runs locally, not in production
 if __name__ == '__main__':
