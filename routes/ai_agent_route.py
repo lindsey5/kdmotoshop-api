@@ -7,7 +7,7 @@ agent_bp = Blueprint("agent", __name__)
 
 @agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
 @cross_origin(
-    origins=["https://kdmotoshop.onrender.com"],
+    origins=["https://kdmotoshop.onrender.com", "http://localhost:5173"],
     supports_credentials=True,
     methods=["POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"]

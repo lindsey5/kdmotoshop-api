@@ -17,7 +17,7 @@ app.register_blueprint(predict_bp)
 app.register_blueprint(agent_bp)
 
 # This route must be outside the __main__ block
-@app.route('/')
+@app.route('/run', methods=["POST"])
 def home():
     return 'Hello from KDMotoshop on Render!'
 
