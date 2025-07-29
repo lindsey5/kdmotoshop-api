@@ -6,7 +6,12 @@ import uuid
 agent_bp = Blueprint("agent", __name__)
 
 @agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
-@cross_origin() 
+@cross_origin(
+    origins=["https://kdmotoshop.onrender.com"],
+    supports_credentials=True,
+    methods=["POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"]
+)
 def chat():
     # Get thread_id from request or generate a new one
     thread_id = request.json.get("thread_id") or str(uuid.uuid4())

@@ -6,7 +6,11 @@ import os
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app,
+     origins=["https://kdmotoshop.onrender.com", "http://localhost:5173"],
+     methods=["GET", "POST", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization"],
+     supports_credentials=True)  # Only if you're sending cookies or auth headers
 
 # Register blueprint
 app.register_blueprint(predict_bp)
