@@ -8,18 +8,9 @@ app = Flask(__name__)
 
 CORS(app, 
      origins=["http://localhost:5173", "https://kdmotoshop.onrender.com"],
-     methods=["GET", "POST", "OPTIONS"],
+     methods=["GET", "POST"],
      allow_headers=["Content-Type", "Authorization"])
 
-@app.before_request
-def handle_preflight():
-    if request.method.lower() == 'options':
-        response = app.make_default_options_response()
-        headers = response.headers
-        headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
-        headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-        headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Accept'
-        return response
 
 # Register blueprint
 app.register_blueprint(predict_bp)
