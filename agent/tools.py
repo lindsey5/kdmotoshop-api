@@ -1,16 +1,14 @@
 from langchain.tools import tool
 import os
+
 from agent.db import get_products_collection
-from agent.utils import create_db_vectorstore, create_pdf_vectorstore, create_rag_chain
+from agent.utils import _format_product, create_rag_chain
+from agent.vector import create_pdf_vectorstore
 
 url = os.environ.get("URL")
 
-docs = list(get_products_collection().find({}))
-
-dbstore = create_db_vectorstore(docs=docs)
-db_chain = create_rag_chain(dbstore)
-
 vectorstore = create_pdf_vectorstore("data/qa.pdf")
+
 qa_chain = create_rag_chain(vectorstore)
 
 @tool
@@ -20,10 +18,12 @@ def ask_question(question: str) -> str:
     return result["result"]
 
 @tool
-def products_tool(query: str) -> str:
-    """Search, sort or filter products from the KD Moto Shop inventory."""
-    result = db_chain({ "query" : query })
-    return result["result"]
+def products_tool() -> str:
+    """Search, sort or filter products by (product name, stock, prices, rating) from the KD Moto Shop inventory."""
+    products = list(get_products_collection().find({}))
+    if not products:
+        return "No products found."
     
+    return [_format_product(product) for _, product in enumerate(products)]
     
 tools = [products_tool, ask_question]
