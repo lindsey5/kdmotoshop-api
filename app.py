@@ -17,7 +17,7 @@ CORS(app,
 app.register_blueprint(predict_bp)
 app.register_blueprint(agent_bp)
 
-@app.route("/")
+@app.route("/", methods=['GET', 'OPTIONS'])
 def run():
     response = model.invoke([{"role": "user", "content": "H"}])
     response.text()
