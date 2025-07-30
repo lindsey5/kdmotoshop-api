@@ -19,7 +19,7 @@ app.register_blueprint(agent_bp)
 
 @app.route("/", methods=['GET', 'OPTIONS'])
 def run():
-    response = get_model.invoke([{"role": "user", "content": "H"}])
+    response = get_model().invoke([{"role": "user", "content": "H"}])
     response.text()
 
     print(f"Agent response: {response}")
