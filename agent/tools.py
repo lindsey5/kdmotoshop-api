@@ -8,12 +8,14 @@ from agent.vector import load_vectorstore
 url = os.environ.get("URL")
 
 ## vectorstore = create_pdf_vectorstore("data/qa.pdf")
-qa_chain = create_rag_chain(load_vectorstore())
+def get_qa_chain():
+    vectorstore = load_vectorstore()
+    return create_rag_chain(vectorstore)
 
 @tool
 def ask_question(question: str) -> str:
     """Search answers related to customer question"""
-    result = qa_chain({"query": question})
+    result = get_qa_chain({"query": question})
     return result["result"]
 
 @tool
@@ -24,5 +26,7 @@ def products_tool() -> str:
         return "No products found."
     
     return [_format_product(product) for _, product in enumerate(products)]
-    
-tools = [products_tool, ask_question]
+
+def getTools():
+    tools = [products_tool, ask_question]
+    return tools

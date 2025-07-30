@@ -1,8 +1,8 @@
 from flask import Flask, jsonify
+from agent.config import get_model
 from routes.predict_route import predict_bp
 from routes.ai_agent_route import agent_bp
 from flask_cors import CORS
-from agent.config import model
 import os
 
 app = Flask(__name__)
@@ -19,7 +19,7 @@ app.register_blueprint(agent_bp)
 
 @app.route("/", methods=['GET', 'OPTIONS'])
 def run():
-    response = model.invoke([{"role": "user", "content": "H"}])
+    response = get_model.invoke([{"role": "user", "content": "H"}])
     response.text()
 
     print(f"Agent response: {response}")
