@@ -2,18 +2,17 @@ from langchain.tools import tool
 import os
 
 from agent.db import get_products_collection
-from agent.utils import _format_product, create_rag_chain
-from agent.vector import create_pdf_vectorstore
+from .utils import _format_product, create_rag_chain
+from agent.vector import load_vectorstore
 
 url = os.environ.get("URL")
 
-vectorstore = create_pdf_vectorstore("data/qa.pdf")
-
-qa_chain = create_rag_chain(vectorstore)
+## vectorstore = create_pdf_vectorstore("data/qa.pdf")
+qa_chain = create_rag_chain(load_vectorstore())
 
 @tool
 def ask_question(question: str) -> str:
-    """Use this to answer customer questions"""
+    """Search answers related to customer question"""
     result = qa_chain({"query": question})
     return result["result"]
 

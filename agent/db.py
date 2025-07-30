@@ -18,8 +18,6 @@ def load_db():
 
     return None 
 
-
-
 def get_products_collection():
     global db
     if db is None:
