@@ -30,8 +30,8 @@ def _format_product(product: Dict[str, Any]) -> str:
             variant_price = variant.get('price', 0)
             variant_stock = variant.get('stock', 0)
             attributes = variant.get("attributes", {})
-            attr_text = ", ".join(f"{value}" for key, value in attributes.items())
-            result += f"-{j}.{attr_text}\n  Price: ₱{variant_price:.2f}, Stock: {variant_stock}\n"
+            attr_text = " | ".join(f"{value}" for key, value in attributes.items())
+            result += f"-{j}.{attr_text}\n    -Price: ₱{variant_price:.2f}, Stock: {variant_stock}\n"
     
     result += "\n"
     return result

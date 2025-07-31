@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
-from agent.agent import get_agent_executor
+from agent.agent import agent_executor
 import uuid
 
 agent_bp = Blueprint("agent", __name__)
@@ -25,7 +25,7 @@ def chat():
         }
 
         result = ""
-        for step, metadata in get_agent_executor().stream(
+        for step, metadata in agent_executor.stream(
             {"messages": [input_message]},
             config=config,
             stream_mode="messages"

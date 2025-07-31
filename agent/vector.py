@@ -11,9 +11,9 @@ def create_pdf_vectorstore(pdf_path: str) -> Chroma:
     loader = PyMuPDFLoader(pdf_path)
     documents = loader.load()
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=500)
     docs = splitter.split_documents(documents)
-
+    
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001") 
 
     vectorstore = Chroma.from_documents(
