@@ -24,21 +24,23 @@ def _format_product(product: Dict[str, Any]) -> str:
       result += f"-Price: ₱{price:.2f}\n"
       result += f"-Stock: {stock_text}\n"
     result += f"-Rating: ({rating}/5)\n"
+    result += "Variants:\n"
     # Handle variants
     if variants:
         for j, variant in enumerate(variants, 1): 
             variant_price = variant.get('price', 0)
             variant_stock = variant.get('stock', 0)
             attributes = variant.get("attributes", {})
+            
             attr_text = " | ".join(f"{value}" for key, value in attributes.items())
-            result += f"-{j}.{attr_text}\n    -Price: ₱{variant_price:.2f}, Stock: {variant_stock}\n"
+            result += f" ●{attr_text}\n    -Price: ₱{variant_price:.2f}, Stock: {variant_stock}\n"
     
     result += "\n"
     return result
 
 # Create RAG chain
 def create_rag_chain(vectorstore: Chroma):
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 5 })
     qa_chain = RetrievalQA.from_chain_type(
         llm=GoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.environ.get("GEMINI_API_KEY")),  
         chain_type="stuff", 

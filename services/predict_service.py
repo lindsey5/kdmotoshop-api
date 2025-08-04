@@ -1,3 +1,4 @@
+import calendar
 from flask import jsonify
 import pandas as pd
 import joblib
@@ -78,8 +79,10 @@ def predict_future_sales():
         daily_sales.set_index('DATE', inplace=True)
         daily_sales.sort_index(inplace=True)
 
+        _, num_days = calendar.monthrange(2025, 7)
+
         # Forecast future sales
-        forecast_results = forecast_next_days(model, daily_sales.reset_index(), num_days=30)
+        forecast_results = forecast_next_days(model, daily_sales.reset_index(), num_days=num_days)
 
         return {
             'forecast':[float(pred) for pred in forecast_results['PREDICTED_SALES']],
@@ -87,6 +90,7 @@ def predict_future_sales():
             'actual_sales' : [float(sales) for sales in daily_sales['SOLD PRICE']],
             'dates' :  daily_sales.reset_index()['DATE'].dt.strftime('%Y-%m-%d').tolist(),
             'success': True,
+            'month' : 'July 2025'
         }
     except Exception as e:
         return {
@@ -207,4 +211,5 @@ def forecast_items_qty_sold():
     return {
         'forecast': predictions,
         'success': True,
+        'month': 'July 2025'
     }

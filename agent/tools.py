@@ -3,17 +3,17 @@ import os
 
 from agent.db import get_products_collection
 from .utils import _format_product, create_rag_chain
-from agent.vector import create_pdf_vectorstore, load_vectorstore
+from agent.vector import create_pdf_vectorstore
 
 url = os.environ.get("URL")
 
-# vectorstore = create_pdf_vectorstore("data/qa.pdf")
-vectorstore = load_vectorstore()
+vectorstore = create_pdf_vectorstore("data/QA.pdf")
+# vectorstore = load_vectorstore()
 qa_chain =  create_rag_chain(vectorstore)
 
 @tool
 def ask_question(question: str) -> str:
-    """Find answers related to customer question"""
+    """Filter or search an answers related to questions"""
     result = qa_chain({"query": question})
     return result["result"]
 

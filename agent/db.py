@@ -11,7 +11,7 @@ def load_db():
 
         db = client["kd-motoshop"]
 
-        print("✅ Connected to MongoDB successfully.")
+        print("Connected to DB successfully.")
 
     except Exception as e:
         print("❌ An unexpected error occurred:", e)
@@ -25,10 +25,10 @@ def get_products_collection():
     try:
         collection = db["products"]
 
-        print("✅ Connected to MongoDB successfully.")
+        print("Connected to DB successfully.")
         return collection
 
     except Exception as e:
         print("❌ An unexpected error occurred:", e)
 
-    return None  # Explicitly return None if connection fails
+    return None  
