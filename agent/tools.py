@@ -13,7 +13,7 @@ qa_chain =  create_rag_chain(vectorstore)
 
 @tool
 def ask_question(question: str) -> str:
-    """Filter or search an answers related to questions"""
+    """Search for a knowledge based answers related to customer questions"""
     result = qa_chain({"query": question})
     return result["result"]
 

@@ -16,11 +16,24 @@ def loadDataset():
     sheet_name = 'E-COM January-June 2025 Sales'
     return pd.read_excel(file_path, sheet_name=sheet_name)
 
-def forecast_next_days(model, historical_df, num_days=30):
+def forecast_next_days(model, historical_df, year, month):
     """
     Forecast next `num_days` using trained model and past features.
     """
-    forecast_dates = pd.date_range(start=historical_df['DATE'].iloc[-1] + pd.Timedelta(days=1), periods=num_days)
+    df_last_date = pd.to_datetime(historical_df['DATE'].iloc[-1])
+
+    # Last day of the target month
+    _, last_day = calendar.monthrange(year, month)
+    forecast_end_date = datetime(year, month, last_day)
+
+    # Start forecasting from the next day after last known date
+    forecast_start_date = df_last_date + pd.Timedelta(days=1)
+
+    # Compute number of days to forecast
+    num_days = (forecast_end_date - forecast_start_date).days + 1  # +1 to include end date
+
+    # Generate forecast dates
+    forecast_dates = pd.date_range(start=forecast_start_date, periods=num_days)
     forecast_df = []
 
     temp_df = historical_df.copy()
@@ -68,10 +81,13 @@ def forecast_next_days(model, historical_df, num_days=30):
         ], ignore_index=True)
 
     forecast_df = pd.DataFrame(forecast_df)
+    forecast_df = forecast_df[
+        (forecast_df['DATE'].dt.month == month) & 
+        (forecast_df['DATE'].dt.year == year)
+    ]
     return forecast_df
 
-
-def predict_future_sales():
+def predict_future_sales(month, year):
     try:
         df = loadDataset()
 
@@ -79,10 +95,8 @@ def predict_future_sales():
         daily_sales.set_index('DATE', inplace=True)
         daily_sales.sort_index(inplace=True)
 
-        _, num_days = calendar.monthrange(2025, 7)
-
         # Forecast future sales
-        forecast_results = forecast_next_days(model, daily_sales.reset_index(), num_days=num_days)
+        forecast_results = forecast_next_days(model, daily_sales.reset_index(), year, month)
 
         return {
             'forecast':[float(pred) for pred in forecast_results['PREDICTED_SALES']],
