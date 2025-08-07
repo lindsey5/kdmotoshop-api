@@ -157,16 +157,6 @@ def create_global_features(data):
     return data_with_lags
 
 def forecast_items_qty_sold(target_month=None, target_year=None):
-    """
-    Forecast item quantities sold for a target month/year.
-    
-    Args:
-        target_month (int, optional): Target month (1-12). Defaults to current month.
-        target_year (int, optional): Target year. Defaults to current year.
-    
-    Returns:
-        dict: Forecast results with success status and predictions
-    """
     try:
         # Load and prepare data
         df = loadDataset()
