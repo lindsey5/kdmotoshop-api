@@ -5,6 +5,7 @@ import joblib
 import numpy as np
 from sklearn.calibration import LabelEncoder
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 # Load model
 model = joblib.load('model/kdmotoshop_xgb_model.pkl')
@@ -104,7 +105,6 @@ def predict_future_sales(month, year):
             'actual_sales' : [float(sales) for sales in daily_sales['SOLD PRICE']],
             'dates' :  daily_sales.reset_index()['DATE'].dt.strftime('%Y-%m-%d').tolist(),
             'success': True,
-            'month' : 'July 2025'
         }
     except Exception as e:
         return {
@@ -156,74 +156,199 @@ def create_global_features(data):
 
     return data_with_lags
 
-def forecast_items_qty_sold():
-    df = loadDataset()
-    df['MONTH'] = df['DATE'].dt.month
-    df['YEAR'] = df['DATE'].dt.year
+def forecast_items_qty_sold(target_month=None, target_year=None):
+    """
+    Forecast item quantities sold for a target month/year.
+    
+    Args:
+        target_month (int, optional): Target month (1-12). Defaults to current month.
+        target_year (int, optional): Target year. Defaults to current year.
+    
+    Returns:
+        dict: Forecast results with success status and predictions
+    """
+    try:
+        # Load and prepare data
+        df = loadDataset()
+        
+        # Ensure DATE column is datetime
+        if not pd.api.types.is_datetime64_any_dtype(df['DATE']):
+            df['DATE'] = pd.to_datetime(df['DATE'])
+        
+        df['MONTH'] = df['DATE'].dt.month
+        df['YEAR'] = df['DATE'].dt.year
 
-    monthly_data = df.groupby(['ITEM DESCRIPTION', 'YEAR', 'MONTH']).agg({
-        'QTY': 'sum',
-        'SOLD PRICE': 'mean',
-    }).reset_index()
+        # Aggregate monthly data
+        monthly_data = df.groupby(['ITEM DESCRIPTION', 'YEAR', 'MONTH']).agg({
+            'QTY': 'sum',
+            'SOLD PRICE': 'mean',
+        }).reset_index()
 
-    monthly_data['QUARTER'] = monthly_data['MONTH'].apply(lambda x: ((x - 1) // 3) + 1)
-    data = create_global_features(monthly_data)
+        monthly_data['QUARTER'] = monthly_data['MONTH'].apply(lambda x: ((x - 1) // 3) + 1)
+        
+        # Create features (assuming this function exists)
+        data = create_global_features(monthly_data)
 
-    today = datetime.today()
+        # Validate data exists
+        if data.empty:
+            return {
+                'forecast': [],
+                'success': False,
+                'error': 'No historical data available',
+                'month': None
+            }
 
-    current_month = today.month
-    current_year = today.year
-    current_quarter = ((current_month - 1) // 3) + 1
+        # Get last available date from data
+        last_year = int(data['YEAR'].max())
+        last_month = int(data[data['YEAR'] == last_year]['MONTH'].max())
 
-    feature_columns = [
-        'ITEM_ENCODED','TIME_IDX','MONTH','QUARTER',
-        'QTY_LAG1','QTY_LAG2','QTY_LAG3',
-        'QTY_ROLLING_3','QTY_ROLLING_6','QTY_RELATIVE',
-        'MONTH_SIN','MONTH_COS','QUARTER_SIN','QUARTER_COS',
-    ]
+        # Set target date
+        if target_month is None or target_year is None:
+            today = datetime.today()
+            target_month = target_month or today.month
+            target_year = target_year or today.year
+        
+        target_month = int(target_month)
+        target_year = int(target_year)
+        
+        # Validate target date
+        if not (1 <= target_month <= 12):
+            return {
+                'forecast': [],
+                'success': False,
+                'error': 'Invalid target month. Must be between 1 and 12.',
+                'month': None
+            }
 
-    predictions = []
+        # Calculate forecast period
+        last_date = datetime(last_year, last_month, 1)
+        target_date = datetime(target_year, target_month, 1)
+        
+        # Check if target is in the past relative to available data
+        if target_date <= last_date:
+            return {
+                'forecast': [],
+                'success': False,
+                'error': f'Target date {target_date.strftime("%B %Y")} is not after the last available data ({last_date.strftime("%B %Y")})',
+                'month': f"{target_date:%B %Y}"
+            }
 
-    # Group by item
-    for item, item_df in data.groupby('ITEM DESCRIPTION'):
-        item_df = item_df.sort_values(['YEAR', 'MONTH'])
+        # Define feature columns
+        feature_columns = [
+            'ITEM_ENCODED', 'TIME_IDX', 'MONTH', 'QUARTER',
+            'QTY_LAG1', 'QTY_LAG2', 'QTY_LAG3',
+            'QTY_ROLLING_3', 'QTY_ROLLING_6', 'QTY_RELATIVE',
+            'MONTH_SIN', 'MONTH_COS', 'QUARTER_SIN', 'QUARTER_COS',
+        ]
 
-        # Skip if less than 2 months of data
-        if len(item_df) < 2:
-            continue
+        # Verify feature columns exist
+        missing_features = [col for col in feature_columns if col not in data.columns]
+        if missing_features:
+            return {
+                'forecast': [],
+                'success': False,
+                'error': f'Missing required feature columns: {missing_features}',
+                'month': None
+            }
 
-        # Get features from last row
-        last = item_df.iloc[-1:].copy()
-        feat = last[feature_columns].iloc[0:1].copy()
+        predictions_all_months = []
+        current_date = last_date + relativedelta(months=1)
 
-        feat['MONTH'] = (current_year - 2025) * 12 + (current_month - 1)
-        feat['MONTH_SIN'] = np.sin(2 * np.pi * current_month / 12)
-        feat['MONTH_COS'] = np.cos(2 * np.pi * current_month / 12)
-        feat['QUARTER'] = current_quarter
-        feat['QUARTER_SIN'] = np.sin(2 * np.pi * current_quarter / 4)
-        feat['QUARTER_COS'] = np.cos(2 * np.pi * current_quarter / 4)
+        # Make a copy of data to avoid modifying original
+        forecast_data = data.copy()
 
-        # Lag and rolling features
-        feat['QTY_LAG1'] = item_df['QTY'].iloc[-1]
-        feat['QTY_LAG2'] = item_df['QTY'].iloc[-2]
-        feat['QTY_LAG3'] = item_df['QTY'].iloc[-3] if len(item_df) >= 3 else feat['QTY_LAG2']
-        feat['QTY_ROLLING_3'] = item_df['QTY'].tail(3).mean()
-        feat['QTY_ROLLING_6'] = item_df['QTY'].tail(6).mean()
+        # Loop through months until target
+        while current_date <= target_date:
+            forecast_month = current_date.month
+            forecast_year = current_date.year
+            current_quarter = ((forecast_month - 1) // 3) + 1
 
-        # Make prediction
-        pred =float(max(0, model_2.predict(feat).item()))
+            month_predictions = []
 
-        predictions.append({
-            'item': str(item),
-            'price': round(item_df['SOLD PRICE'].iloc[-1], 2),
-            'predicted_qty': round(pred, 0),
-            'sales': round(item_df['SOLD PRICE'].iloc[-1] * round(pred, 0), 2),
-            'months_of_data': int(len(item_df)),
-            'last_month_qty': int(item_df['QTY'].iloc[-1]),
-            'predicted_month': f"{current_month:02d}",
-        })
-    return {
-        'forecast': predictions,
-        'success': True,
-        'month': 'July 2025'
-    }
+            # Group by item and make predictions
+            for item, item_df in forecast_data.groupby('ITEM DESCRIPTION'):
+                item_df = item_df.sort_values(['YEAR', 'MONTH']).reset_index(drop=True)
+                
+                # Skip items with insufficient data
+                if len(item_df) < 3: 
+                    continue
+
+                try:
+                    # Get the most recent row for this item
+                    last_row = item_df.iloc[-1].copy()
+                    
+                    # Create feature vector
+                    feat = pd.DataFrame([last_row[feature_columns]])
+                    
+                    # Update time-based features for forecast month
+                    feat['MONTH'] = forecast_month
+                    feat['MONTH_SIN'] = np.sin(2 * np.pi * forecast_month / 12)
+                    feat['MONTH_COS'] = np.cos(2 * np.pi * forecast_month / 12)
+                    feat['QUARTER'] = current_quarter
+                    feat['QUARTER_SIN'] = np.sin(2 * np.pi * current_quarter / 4)
+                    feat['QUARTER_COS'] = np.cos(2 * np.pi * current_quarter / 4)
+
+                    # Update lag features
+                    feat['QTY_LAG1'] = item_df['QTY'].iloc[-1]
+                    feat['QTY_LAG2'] = item_df['QTY'].iloc[-2] if len(item_df) >= 2 else item_df['QTY'].iloc[-1]
+                    feat['QTY_LAG3'] = item_df['QTY'].iloc[-3] if len(item_df) >= 3 else feat['QTY_LAG2'].iloc[0]
+                    
+                    # Update rolling averages
+                    feat['QTY_ROLLING_3'] = item_df['QTY'].tail(min(3, len(item_df))).mean()
+                    feat['QTY_ROLLING_6'] = item_df['QTY'].tail(min(6, len(item_df))).mean()
+
+                    # Make prediction
+                    pred_qty = float(max(0, model_2.predict(feat).item()))
+
+                    month_predictions.append({
+                        'item': str(item),
+                        'price': round(float(item_df['SOLD PRICE'].iloc[-1]), 2),
+                        'predicted_qty': round(pred_qty, 0),
+                        'sales': round(float(item_df['SOLD PRICE'].iloc[-1]) * pred_qty, 2),
+                        'months_of_data': len(item_df),
+                        'last_month_qty': int(item_df['QTY'].iloc[-1]),
+                        'predicted_month': f"{forecast_month:02d}",
+                        'predicted_year': forecast_year
+                    })
+
+                    # Add prediction back to data for next iteration
+                    new_row = last_row.copy()
+                    new_row['YEAR'] = forecast_year
+                    new_row['MONTH'] = forecast_month
+                    new_row['QTY'] = pred_qty
+                    new_row['QUARTER'] = current_quarter
+                    
+                    # Update TIME_IDX if it exists
+                    if 'TIME_IDX' in new_row:
+                        new_row['TIME_IDX'] = forecast_data['TIME_IDX'].max() + 1
+                    
+                    forecast_data = pd.concat([forecast_data, pd.DataFrame([new_row])], ignore_index=True)
+
+                except Exception as e:
+                    # Log individual item prediction errors but continue
+                    print(f"Warning: Could not predict for item '{item}': {str(e)}")
+                    continue
+
+            predictions_all_months.extend(month_predictions)
+            current_date += relativedelta(months=1)
+
+        # Filter to target month only
+        target_predictions = [
+            p for p in predictions_all_months
+            if int(p['predicted_month']) == target_month and int(p['predicted_year']) == target_year
+        ]
+
+        return {
+            'forecast': target_predictions,
+            'success': True,
+            'month': f"{datetime(target_year, target_month, 1):%B %Y}",
+            'total_items_predicted': len(target_predictions)
+        }
+
+    except Exception as e:
+        return {
+            'forecast': [],
+            'success': False,
+            'error': f'Forecasting failed: {str(e)}',
+            'month': None
+        }

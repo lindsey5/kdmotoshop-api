@@ -18,7 +18,9 @@ def predict():
 @predict_bp.route('/api/predict/items', methods=['GET', 'OPTIONS'])
 def predict_items():
     try:
-        forecast_data = forecast_items_qty_sold()
+        month = request.args.get("month", default=datetime.now().month, type=int)
+        year = request.args.get("year", default=datetime.now().year, type=int)
+        forecast_data = forecast_items_qty_sold(month, year)
         return jsonify(forecast_data)
     except Exception as e:
                 print("Error", str(e))
