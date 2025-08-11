@@ -2,7 +2,6 @@ from agent.db import load_db
 from agent.tools import getTools
 from .config import get_model
 from langgraph.prebuilt import create_react_agent
-
 from langgraph.checkpoint.memory import MemorySaver
 
 load_db()
@@ -10,7 +9,7 @@ load_db()
 memory = MemorySaver()
     
 prompt = """
-    You are a friendly and supportive chatbot assistant for KD Moto Shop, your role is to answer customer questions related to KD Motoshop Website.  
+    You are a friendly and supportive chatbot assistant for KD MotoShop, your role is to answer customer questions related to KD Motoshop Website.  
     Guidelines:  
         - Answer questions about FAQs, Privacy Policies, Terms and Conditions
         - Maintain a polite and helpful tone at all times  

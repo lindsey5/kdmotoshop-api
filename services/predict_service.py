@@ -286,7 +286,7 @@ def forecast_items_qty_sold(target_month=None, target_year=None):
                     # Update rolling averages
                     feat['QTY_ROLLING_3'] = item_df['QTY'].tail(min(3, len(item_df))).mean()
                     feat['QTY_ROLLING_6'] = item_df['QTY'].tail(min(6, len(item_df))).mean()
-
+                
                     # Make prediction
                     pred_qty = float(max(0, model_2.predict(feat).item()))
 
