@@ -1,22 +1,19 @@
-from flask import Blueprint, request, jsonify
-from flask_cors import cross_origin
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from agent.agent import agent_executor
 import uuid
 
-agent_bp = Blueprint("agent", __name__)
+agent_router = APIRouter()
 
-@agent_bp.route("/api/chat", methods=['POST', 'OPTIONS'])
-@cross_origin(
-    origins=["https://kdmotoshop.onrender.com", "http://localhost:5173"],
-    supports_credentials=True,
-    methods=["POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"]
-)
-def chat():
+@agent_router.post("/api/chat")
+async def chat(request: Request):
     try:
+        body = await request.json()
+        
         # Get thread_id from request or generate a new one
-        thread_id = request.json.get("thread_id") or str(uuid.uuid4())
-        user_message = request.json.get("message")
+        thread_id = body.get("thread_id") or str(uuid.uuid4())
+        user_message = body.get("message")
+        
         input_message = {"role": "user", "content": user_message}
         config = {
             "configurable": {
@@ -33,8 +30,8 @@ def chat():
             if metadata["langgraph_node"] == "agent" and (text := step.text()):
                 result += text
 
-        return jsonify({"response": result, "success": True, "thread_id" : thread_id })
+        return JSONResponse(content={"response": result, "success": True, "thread_id": thread_id})
 
     except Exception as e:
         print("Error in /api/chat:", str(e))
-        return jsonify({"error": "Internal Server Error"}), 500
+        return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)

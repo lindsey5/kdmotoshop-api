@@ -1,5 +1,4 @@
 import calendar
-from flask import jsonify
 import pandas as pd
 import joblib
 import numpy as np
