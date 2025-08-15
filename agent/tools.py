@@ -7,7 +7,7 @@ from agent.vector import create_pdf_vectorstore
 
 url = os.environ.get("URL")
 
-vectorstore = create_pdf_vectorstore("data/QA.pdf")
+vectorstore = create_pdf_vectorstore("data/qa.pdf")
 # vectorstore = load_vectorstore()
 qa_chain =  create_rag_chain(vectorstore)
 
