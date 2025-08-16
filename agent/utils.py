@@ -1,10 +1,4 @@
-import os
 from typing import Any, Dict
-
-from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAI
-
-from langchain.chains import RetrievalQA
 
 def _format_product(product: Dict[str, Any]) -> str:
     product_name = product.get('product_name', 'N/A')
@@ -37,14 +31,3 @@ def _format_product(product: Dict[str, Any]) -> str:
     
     result += "\n"
     return result
-
-# Create RAG chain
-def create_rag_chain(vectorstore: Chroma):
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5 })
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=GoogleGenerativeAI(model="models/gemini-2.0-flash", google_api_key=os.environ.get("GEMINI_API_KEY")),  
-        chain_type="stuff", 
-        retriever=retriever,
-        return_source_documents=True,
-    )
-    return qa_chain
