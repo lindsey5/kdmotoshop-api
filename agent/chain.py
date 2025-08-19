@@ -11,5 +11,6 @@ def create_rag_chain(vectorstore: Chroma):
         chain_type="stuff", 
         retriever=retriever,
         return_source_documents=True,
+        
     )
     return qa_chain
