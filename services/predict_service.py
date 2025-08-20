@@ -45,31 +45,40 @@ def forecast_next_days(model, historical_df, year, month):
         is_weekend = 1 if dayofweek >= 5 else 0
 
         lag_1 = temp_df['SOLD PRICE'].iloc[-1]
-        lag_2 = temp_df['SOLD PRICE'].iloc[-2]
-        lag_3 = temp_df['SOLD PRICE'].iloc[-3]
         lag_7 = temp_df['SOLD PRICE'].iloc[-7] if len(temp_df) >= 7 else temp_df['SOLD PRICE'].mean()
         lag_30 = temp_df['SOLD PRICE'].iloc[-30] if len(temp_df) >= 30 else temp_df['SOLD PRICE'].mean()
 
 
         rolling = temp_df['SOLD PRICE'].rolling(window=7, min_periods=1)
         rolling_mean_7 = rolling.mean().iloc[-1]
+        rolling_std_7 = rolling.std().iloc[-1]
 
         rolling = temp_df['SOLD PRICE'].rolling(window=30, min_periods=1)
         rolling_mean_30 = rolling.mean().iloc[-1]
+        rolling_std_30 = rolling.std().iloc[-1]
+
+        rolling = temp_df['SOLD PRICE'].rolling(window=60, min_periods=1)
+        rolling_mean_60 = rolling.mean().iloc[-1]
+        rolling_std_60 = rolling.std().iloc[-1]
 
         diff_30 = temp_df['SOLD PRICE'].iloc[-1] - temp_df['SOLD PRICE'].iloc[-31] if len(temp_df) >= 31 else 0
+        ##ema_7 = temp_df['SOLD PRICE'].ewm(span=7, adjust=False).mean().iloc[-1]
 
         features = np.array([
             dayofweek, day, month, is_weekend,
-            lag_1, lag_2, lag_3, lag_7,
+            lag_1, lag_7,
             lag_30,
             rolling_mean_7,
             rolling_mean_30,
+            rolling_mean_60,
+            rolling_std_7,
+            rolling_std_30,
+            rolling_std_60,
             diff_30,
         ]).reshape(1, -1)
 
         predicted_price = model.predict(features)[0]
-        predicted_price = max(predicted_price, 0)  # Avoid negative predictions
+        predicted_price = predicted_price
 
         # Append prediction
         forecast_df.append({'DATE': date, 'PREDICTED_SALES': predicted_price})
@@ -89,23 +98,21 @@ def forecast_next_days(model, historical_df, year, month):
 
 def predict_future_sales(month, year):
     try:
-        df = loadDataset()
-
-        daily_sales = df.groupby('DATE')['SOLD PRICE'].sum().reset_index()
-        daily_sales.set_index('DATE', inplace=True)
-        daily_sales.sort_index(inplace=True)
+        file_path = 'data/kd-motoshop-sales.xlsx'
+        df = pd.read_excel(file_path)
 
         # Forecast future sales
-        forecast_results = forecast_next_days(model, daily_sales.reset_index(), year, month)
+        forecast_results = forecast_next_days(model, df.reset_index(), year, month)
 
         return {
             'forecast':[float(pred) for pred in forecast_results['PREDICTED_SALES']],
             'forecast_dates': forecast_results['DATE'].dt.strftime('%Y-%m-%d').tolist(),
-            'actual_sales' : [float(sales) for sales in daily_sales['SOLD PRICE']],
-            'dates' :  daily_sales.reset_index()['DATE'].dt.strftime('%Y-%m-%d').tolist(),
+            'actual_sales' : [float(sales) for sales in df['SOLD PRICE']],
+            'dates' :  df.reset_index()['DATE'].dt.strftime('%Y-%m-%d').tolist(),
             'success': True,
         }
     except Exception as e:
+        print("Error in predict_future_sales:", str(e))
         return {
             'success': False,
             'error': str(e),
