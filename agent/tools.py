@@ -34,7 +34,7 @@ def products_tool() -> str:
 def get_top_products() -> str:
     """Fetch the most selling products from the API."""
     try:
-        response = requests.get(f"{url}/api/products/top")
+        response = requests.get(f"{url}/api/products/top?limit=100")
         response.raise_for_status()  # raise error if status != 200
 
         data = response.json()
