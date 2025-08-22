@@ -185,49 +185,16 @@ def forecast_items_qty_sold(target_month=None, target_year=None):
         # Create features (assuming this function exists)
         data = create_global_features(monthly_data)
 
-        # Validate data exists
-        if data.empty:
-            return {
-                'forecast': [],
-                'success': False,
-                'error': 'No historical data available',
-                'month': None
-            }
-
         # Get last available date from data
         last_year = int(data['YEAR'].max())
         last_month = int(data[data['YEAR'] == last_year]['MONTH'].max())
-
-        # Set target date
-        if target_month is None or target_year is None:
-            today = datetime.today()
-            target_month = target_month or today.month
-            target_year = target_year or today.year
         
         target_month = int(target_month)
         target_year = int(target_year)
         
-        # Validate target date
-        if not (1 <= target_month <= 12):
-            return {
-                'forecast': [],
-                'success': False,
-                'error': 'Invalid target month. Must be between 1 and 12.',
-                'month': None
-            }
-
         # Calculate forecast period
         last_date = datetime(last_year, last_month, 1)
         target_date = datetime(target_year, target_month, 1)
-        
-        # Check if target is in the past relative to available data
-        if target_date <= last_date:
-            return {
-                'forecast': [],
-                'success': False,
-                'error': f'Target date {target_date.strftime("%B %Y")} is not after the last available data ({last_date.strftime("%B %Y")})',
-                'month': f"{target_date:%B %Y}"
-            }
 
         # Define feature columns
         feature_columns = [
@@ -236,16 +203,6 @@ def forecast_items_qty_sold(target_month=None, target_year=None):
             'QTY_ROLLING_3', 'QTY_ROLLING_6', 'QTY_RELATIVE',
             'MONTH_SIN', 'MONTH_COS', 'QUARTER_SIN', 'QUARTER_COS',
         ]
-
-        # Verify feature columns exist
-        missing_features = [col for col in feature_columns if col not in data.columns]
-        if missing_features:
-            return {
-                'forecast': [],
-                'success': False,
-                'error': f'Missing required feature columns: {missing_features}',
-                'month': None
-            }
 
         predictions_all_months = []
         current_date = last_date + relativedelta(months=1)
@@ -266,7 +223,7 @@ def forecast_items_qty_sold(target_month=None, target_year=None):
                 item_df = item_df.sort_values(['YEAR', 'MONTH']).reset_index(drop=True)
                 
                 # Skip items with insufficient data
-                if len(item_df) < 3: 
+                if len(item_df) < 2: 
                     continue
 
                 try:
