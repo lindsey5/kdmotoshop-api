@@ -29,5 +29,5 @@ def _format_product(product: Dict[str, Any]) -> str:
             attr_text = " | ".join(f"{value}" for key, value in attributes.items())
             result += f" ●{attr_text}\n    -Price: ₱{variant_price:.2f}, Stock: {variant_stock}\n"
     
-    result += "\n"
+    result += "\n\n\n"
     return result
