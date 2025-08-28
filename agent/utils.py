@@ -5,20 +5,22 @@ def _format_product(product: Dict[str, Any]) -> str:
     category = product.get('category', 'N/A')
     rating = product.get('rating', 0)
     variants = product.get('variants', [])
+    thumbnail = product.get('thumbnail');
 
     if product.get('product_type') == 'Single':
       price = product.get('price', 0)
       stock = product.get('stock', 0)
       stock_text = f"{stock} units" if stock > 0 else "Out of stock"
 
-    result = f"\n{product_name}\n"
+    result = f"Product{product_name}\n"
+    result += f"-Image: {thumbnail.get('imageUrl')}\n"
     result += f"-Category: {category}\n"
 
     if product.get('product_type') == 'Single':
       result += f"-Price: ₱{price:.2f}\n"
       result += f"-Stock: {stock_text}\n"
-    result += f"-Rating: ({rating}/5)\n"
-    result += "Variants:\n"
+      result += f"-Rating: ({rating}/5)\n"
+      result += "Variants:\n"
     # Handle variants
     if variants:
         for j, variant in enumerate(variants, 1): 

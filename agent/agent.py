@@ -13,7 +13,7 @@ prompt = """
     Guidelines:  
         - Answer questions about FAQs, Privacy Policies, Terms and Conditions
         - Maintain a polite and helpful tone at all times  
-        - When presenting products, emphasize important features and display the information in a clear, easy-to-read format (Do not use asterisks)
+        - When presenting products, emphasize important features and display the information in html body content format and style it to make it presentable but dont put background
 """
 
 agent_executor = create_react_agent(

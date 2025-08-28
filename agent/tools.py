@@ -22,7 +22,8 @@ def ask_question(question: str) -> str:
 
 @tool
 def products_tool() -> str:
-    """Search, sort or filter products by (product name, stock, prices, rating) from the KD Moto Shop inventory."""
+    """Search, sort, or filter products by (product name, stock, prices, rating) 
+    from the KD Moto Shop inventory"""
     products = list(get_products_collection().find({}))
     if not products:
         return "No products found."
@@ -32,7 +33,7 @@ def products_tool() -> str:
 
 @tool
 def get_top_products() -> str:
-    """Fetch the most selling products from the API."""
+    """Fetch the most selling products from the API"""
     try:
         response = requests.get(f"{url}/api/products/top")
         response.raise_for_status() 
@@ -50,6 +51,7 @@ def get_top_products() -> str:
                 f'Price: {p["price"]}\n'
                 f'Quantity Sold: {p["totalQuantity"]}\n'
                 f'Rating: {p["rating"]}\n\n'
+                f'Image: {p["image"]}\n\n'
             )
         return result.strip()
 
