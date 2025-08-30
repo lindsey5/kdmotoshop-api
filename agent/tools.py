@@ -6,6 +6,11 @@ from agent.db import get_products_collection
 from .utils import _format_product
 from .chain import create_rag_chain
 from agent.vector import load_vectorstore
+import os
+import requests
+from langchain.tools import tool
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain.chat_models import init_chat_model
 
 url = os.environ.get("URL")
 
@@ -63,9 +68,6 @@ def get_top_products() -> str:
 def getChatbotTools():
     return [products_tool, ask_question, get_top_products]
 
-import os
-import requests
-from langchain.tools import tool
 
 # Environment variables
 PAGE_ID = os.getenv("FB_PAGE_ID")
@@ -77,11 +79,39 @@ tool_prompt = (
     "Provide raw product details and the AI will create compelling marketing copy."
 )
 
+def getPageAccessToken():
+    try:
+        url = f"https://graph.facebook.com/v23.0/{PAGE_ID}"
+        params = {
+            "fields": "access_token",
+            "access_token": ACCESS_TOKEN  # this should be your long-lived USER token
+        }
+        
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()  # raise error if response is not 200
+
+        data = response.json()
+        page_access_token = data.get("access_token")
+
+        if not page_access_token:
+            print("No access token found in response:", data)
+            return None
+
+        return page_access_token
+
+    except Exception as e:
+        print("Error creating page access token:", e)
+        return None
+    
 def create_post(caption: str, image_urls: List[str]) -> str:
     print(f"Caption: {caption}")
     print(f"Image URLs: {image_urls}")
 
     try:
+        page_token = getPageAccessToken()  # always use page access token
+        if not page_token:
+            return "Failed to get Page Access Token."
+
         photo_ids = []
         # First, upload each image to get its ID
         for image_url in image_urls:
@@ -89,22 +119,27 @@ def create_post(caption: str, image_urls: List[str]) -> str:
             payload = {
                 "url": image_url,
                 "published": False,  # upload without posting
-                "access_token": ACCESS_TOKEN,
+                "access_token": page_token,
             }
-            response = requests.post(upload_url, data=payload)
+            response = requests.post(upload_url, data=payload, timeout=10)
             response.raise_for_status()
-            photo_id = response.json().get("id")
-            if photo_id:
-                photo_ids.append({"media_fbid": photo_id})
+
+            data = response.json()
+            photo_id = data.get("id")
+            if not photo_id:
+                print("Upload failed:", data)
+                return "Failed to upload image."
+
+            photo_ids.append({"media_fbid": photo_id})
 
         # Now create a single post with all uploaded images
         post_url = f"https://graph.facebook.com/{PAGE_ID}/feed"
         payload = {
             "message": caption,
             "attached_media": photo_ids,
-            "access_token": ACCESS_TOKEN,
+            "access_token": page_token,
         }
-        response = requests.post(post_url, json=payload, timeout=10000) 
+        response = requests.post(post_url, json=payload, timeout=10)
         response.raise_for_status()
         return response.text
 
@@ -112,8 +147,6 @@ def create_post(caption: str, image_urls: List[str]) -> str:
         print("Error creating Facebook post:", e)
         return "Failed to create Facebook post."
 
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain.chat_models import init_chat_model
 
 def generate_caption(product_details: str) -> str:
     model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
@@ -121,14 +154,13 @@ def generate_caption(product_details: str) -> str:
     messages = [
         SystemMessage(
             content=(
-                """Create one engaging and persuasive Facebook post caption 
+                """Create one tagalog engaging and persuasive Facebook post caption 
 based on the following product details. Make it lively, social-media-friendly, 
 and include a clear call-to-action with the store details: 
 Store Link: https://kdmotoshop.onrender.com/
 Exact Address: Blk. 2 Lot 19 Phase 1 Brgy. Pinagsama, Taguig City
 📍Search mo lang po sa Google Maps/Waze:
-KD Motoshop Helmet Store Pinagsama Taguig
-Landmark: near Phase 1 Arko (C5 Service Road)
+KD Motoshop Helmet Store Pinagsama Taguig Landmark: near Phase 1 Arko (C5 Service Road)
 🕘Store Hours
 Open Daily: 9:00am-9:00pm
 ☎️Contact No.: 09931793845 / 09910735752
