@@ -104,7 +104,7 @@ def create_post(caption: str, image_urls: List[str]) -> str:
             "attached_media": photo_ids,
             "access_token": ACCESS_TOKEN,
         }
-        response = requests.post(post_url, json=payload, timeout=1000) 
+        response = requests.post(post_url, json=payload, timeout=10000) 
         response.raise_for_status()
         return response.text
 
