@@ -117,13 +117,25 @@ from langchain.chat_models import init_chat_model
 
 def generate_caption(product_details: str) -> str:
     model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
+    
     messages = [
         SystemMessage(
             content=(
-                "Create one engaging and persuasive Facebook post caption "
-                "based on the following product details. Make it lively, social-media-friendly, "
-                "and include a clear call-to-action with the store link: "
-                "https://kdmotoshop.onrender.com/"
+                """Create one engaging and persuasive Facebook post caption 
+based on the following product details. Make it lively, social-media-friendly, 
+and include a clear call-to-action with the store details: 
+Store Link: https://kdmotoshop.onrender.com/
+Exact Address: Blk. 2 Lot 19 Phase 1 Brgy. Pinagsama, Taguig City
+📍Search mo lang po sa Google Maps/Waze:
+KD Motoshop Helmet Store Pinagsama Taguig
+Landmark: near Phase 1 Arko (C5 Service Road)
+🕘Store Hours
+Open Daily: 9:00am-9:00pm
+☎️Contact No.: 09931793845 / 09910735752
+🛒Online Shop:
+Shopee: https://ph.shp.ee/D2P7Bbe
+Lazada: https://s.lazada.com.ph/s.tn8GB
+Tiktok: https://vt.tiktok.com/ZSB3XN2Je/?page=TikTokShop"""
             )
         ),
         HumanMessage(content=product_details),
