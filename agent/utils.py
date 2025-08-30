@@ -50,7 +50,7 @@ def getPageAccessToken():
             "access_token": ACCESS_TOKEN  # this should be your long-lived USER token
         }
         
-        response = requests.get(url, params=params, timeout=10)
+        response = requests.get(url, params=params, timeout=10000)
         response.raise_for_status()  # raise error if response is not 200
 
         data = response.json()
@@ -102,7 +102,7 @@ def create_post(caption: str, image_urls: List[str]) -> str:
             "attached_media": photo_ids,
             "access_token": page_token,
         }
-        response = requests.post(post_url, json=payload, timeout=10)
+        response = requests.post(post_url, json=payload, timeout=10000)
         response.raise_for_status()
         return response.text
 
@@ -119,18 +119,14 @@ def generate_caption(product_details: str) -> str:
             content=(
                 """Create one tagalog engaging and persuasive Facebook post caption 
 based on the following product details. Make it lively, social-media-friendly, 
-and include a clear call-to-action with the store details: 
-Store Link: https://kdmotoshop.onrender.com/
+and include a clear call-to-action with the store details (Highlight the store link): 
 Exact Address: Blk. 2 Lot 19 Phase 1 Brgy. Pinagsama, Taguig City
 📍Search mo lang po sa Google Maps/Waze:
 KD Motoshop Helmet Store Pinagsama Taguig Landmark: near Phase 1 Arko (C5 Service Road)
 🕘Store Hours
 Open Daily: 9:00am-9:00pm
 ☎️Contact No.: 09931793845 / 09910735752
-🛒Online Shop:
-Shopee: https://ph.shp.ee/D2P7Bbe
-Lazada: https://s.lazada.com.ph/s.tn8GB
-Tiktok: https://vt.tiktok.com/ZSB3XN2Je/?page=TikTokShop"""
+Visit: https://kdmotoshop.onrender.com for 10% discount and free shipping"""
             )
         ),
         HumanMessage(content=product_details),
