@@ -13,7 +13,7 @@ def _format_product(product: Dict[str, Any]) -> str:
       stock_text = f"{stock} units" if stock > 0 else "Out of stock"
 
     result = f"Product{product_name}\n"
-    result += f"-Image: {thumbnail.get('imageUrl')}\n"
+    result += f"-Product image: {thumbnail.get('imageUrl')}\n"
     result += f"-Category: {category}\n"
 
     if product.get('product_type') == 'Single':
