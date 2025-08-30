@@ -15,6 +15,7 @@ chat_bot_prompt = """
         - Maintain a polite and helpful tone at all times  
         - Always emphasize important features and display the information in html body content format, display image if available, and style it to make it presentable but dont put background
         - Always make the product name bold
+        - Show only 5 products and always include a "Type 'See More' for more" prompt.
 """
 
 chat_bot_agent = create_react_agent(
