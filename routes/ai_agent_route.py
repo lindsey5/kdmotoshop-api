@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from agent.agent import chat_bot_agent, fb_ai_agent
@@ -30,7 +31,10 @@ async def chat(request: Request):
             if metadata["langgraph_node"] == "agent" and (text := step.text()):
                 result += text
 
-        return JSONResponse(content={"response": result, "success": True, "thread_id": thread_id})
+        cleaned = re.sub(r"```[a-zA-Z]*\n?", "", result)
+        cleaned = cleaned.replace("```", "")
+        
+        return JSONResponse(content={"response": cleaned.strip(), "success": True, "thread_id": thread_id})
 
     except Exception as e:
         print("Error in /api/chat:", str(e))
