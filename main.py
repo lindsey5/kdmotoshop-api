@@ -26,7 +26,7 @@ app.include_router(predict_router)
 app.include_router(agent_router)
 
 @app.get("/")
-async def run():
+def root():
     try:
         response = get_model().invoke([{"role": "user", "content": "H"}])
         print(f"Agent raw response: {response}")
