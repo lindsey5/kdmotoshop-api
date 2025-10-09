@@ -5,15 +5,15 @@ from langchain.tools import tool
 from agent.db import get_products_collection
 from .utils import _format_product, create_post, generate_caption
 from .chain import create_rag_chain
-from agent.vector import create_pdf_vectorstore
+from agent.vector import load_vectorstore
 import os
 import requests
 from langchain.tools import tool
 
 url = os.environ.get("URL")
 
-vectorstore = create_pdf_vectorstore("data/qa.pdf")
-# vectorstore = load_vectorstore()
+# vectorstore = create_pdf_vectorstore("data/qa.pdf")
+vectorstore = load_vectorstore()
 qa_chain = create_rag_chain(vectorstore)
 
 
