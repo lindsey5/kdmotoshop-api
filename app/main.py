@@ -27,17 +27,7 @@ app.include_router(agent_router)
 
 @app.get("/")
 async def run():
-    try:
-        response = get_model().invoke([{"role": "user", "content": "H"}])
-        print(f"Agent raw response: {response}")
-
-        if hasattr(response, "content"):
-            return JSONResponse(content={"response": response.content})
-        else:
-            return JSONResponse(content={"response": str(response)})
-    except Exception as e:
-        print("Error in /:", str(e))
-        return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
+    return JSONResponse(content={"response": "Hi."})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
