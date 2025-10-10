@@ -23,13 +23,6 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
-# Initialize agents at startup
-@app.on_event("startup")
-async def startup_event():
-    print("Initializing agents...")
-    initialize_agents()
-    print("Agents initialized successfully!")
-
 # Mount routers
 app.include_router(predict_router)
 app.include_router(agent_router)
@@ -41,6 +34,7 @@ async def root():
         response = model.invoke([{"role": "user", "content": "H"}])
         return JSONResponse(content={"response": getattr(response, "content", str(response))})
     except Exception as e:
+
         print("Error in /:", str(e))
         return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
 
