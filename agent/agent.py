@@ -1,35 +1,68 @@
+from agent.config import get_model
 from agent.db import load_db
 from agent.tools import getChatbotTools, facebook_post_tool
-from .config import get_model
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 
-load_db()
+# Globals
+_model = None
+_memory = None
+_chat_bot_agent = None
+_fb_ai_agent = None
 
-memory = MemorySaver()
-    
-chat_bot_prompt = """
-    You're name is KD MotoBot a friendly and supportive chatbot assistant for KD MotoShop, your role is to answer customer questions related to KD Motoshop Website.  
-    Guidelines:  
-        - Answer questions about FAQs, Privacy Policies, Terms and Conditions
-        - Use tool to answer questions
-        - Maintain a polite and helpful tone at all times  
-        - Always emphasize important features and display the information in html body content format, display image if available, and style it to make it presentable but dont put background
-        - Always make the product name bold
-        - Show only 5 products and always include a "Type 'See More' for more" prompt.
-"""
+def initialize_agents():
+    """
+    Initialize model and agents. Safe to call multiple times.
+    """
+    global _model, _memory, _chat_bot_agent, _fb_ai_agent
 
-chat_bot_agent = create_react_agent(
-    model=get_model(), 
-    tools=getChatbotTools(), 
-    prompt=chat_bot_prompt,
-    checkpointer=memory,
-)
+    if _model is None:
+        print("Loading model...")
+        _model = get_model()
 
-fb_ai_agent_prompt = """You're a ai agent that automate marketing posts"""
+    if _memory is None:
+        _memory = MemorySaver()
 
-fb_ai_agent = create_react_agent(
-    model=get_model(), 
-    tools=[facebook_post_tool], 
-    prompt=fb_ai_agent_prompt,
-)
+    if _chat_bot_agent is None:
+        print("Loading DB for chat bot...")
+        load_db()
+        chat_bot_prompt = """
+            You're name is KD MotoBot, a friendly and supportive chatbot assistant for KD MotoShop. 
+            Guidelines:  
+            - Answer FAQs, Privacy Policies, Terms, etc.
+            - Maintain polite and helpful tone
+            - Emphasize product names in bold
+            - Show max 5 products and include "Type 'See More' for more"
+        """
+        _chat_bot_agent = create_react_agent(
+            model=_model,
+            tools=getChatbotTools(),
+            prompt=chat_bot_prompt,
+            checkpointer=_memory
+        )
+
+    if _fb_ai_agent is None:
+        fb_ai_agent_prompt = "You're an AI agent that automates marketing posts."
+        _fb_ai_agent = create_react_agent(
+            model=_model,
+            tools=[facebook_post_tool],
+            prompt=fb_ai_agent_prompt
+        )
+
+def get_chat_bot_agent():
+    """Getter for chat bot agent"""
+    if _chat_bot_agent is None:
+        initialize_agents()
+    return _chat_bot_agent
+
+def get_fb_ai_agent():
+    """Getter for Facebook AI agent"""
+    if _fb_ai_agent is None:
+        initialize_agents()
+    return _fb_ai_agent
+
+def get_model_instance():
+    """Getter for model"""
+    if _model is None:
+        initialize_agents()
+    return _model

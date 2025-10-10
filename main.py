@@ -1,11 +1,13 @@
+# main.py
+
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from agent.config import get_model
-from routes.predict_route import predict_router   
+from routes.predict_route import predict_router
 from routes.ai_agent_route import agent_router
+from agent.agent import initialize_agents, get_model_instance
 import uvicorn
-import os
 
 app = FastAPI()
 
@@ -21,24 +23,26 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
-# Mount FastAPI routers
+# Initialize agents at startup
+@app.on_event("startup")
+async def startup_event():
+    print("Initializing agents...")
+    initialize_agents()
+    print("Agents initialized successfully!")
+
+# Mount routers
 app.include_router(predict_router)
 app.include_router(agent_router)
 
 @app.get("/")
-def root():
+async def root():
     try:
-        response = get_model().invoke([{"role": "user", "content": "H"}])
-        print(f"Agent raw response: {response}")
-
-        if hasattr(response, "content"):
-            return JSONResponse(content={"response": response.content})
-        else:
-            return JSONResponse(content={"response": str(response)})
+        model = get_model_instance()
+        response = model.invoke([{"role": "user", "content": "H"}])
+        return JSONResponse(content={"response": getattr(response, "content", str(response))})
     except Exception as e:
         print("Error in /:", str(e))
         return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
