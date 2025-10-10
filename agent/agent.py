@@ -51,18 +51,12 @@ def initialize_agents():
 
 def get_chat_bot_agent():
     """Getter for chat bot agent"""
-    if _chat_bot_agent is None:
-        initialize_agents()
     return _chat_bot_agent
 
 def get_fb_ai_agent():
     """Getter for Facebook AI agent"""
-    if _fb_ai_agent is None:
-        initialize_agents()
     return _fb_ai_agent
 
 def get_model_instance():
     """Getter for model"""
-    if _model is None:
-        initialize_agents()
     return _model

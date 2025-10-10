@@ -3,7 +3,6 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 
-
 def create_pdf_vectorstore(pdf_path: str) -> Chroma:
     loader = PyMuPDFLoader(pdf_path)
     documents = loader.load()
@@ -11,7 +10,6 @@ def create_pdf_vectorstore(pdf_path: str) -> Chroma:
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50)
     docs = splitter.split_documents(documents)
 
-    # ✅ Use correct embedding model (must be an embedding .gguf, not a chat model)
     embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
 
     vectorstore = Chroma.from_documents(
