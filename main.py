@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from routes.predict_route import predict_router
 from routes.ai_agent_route import agent_router
-from agent.agent import initialize_agents, get_model_instance
+from agent.agent import get_model_instance
 import uvicorn
 
 app = FastAPI()
