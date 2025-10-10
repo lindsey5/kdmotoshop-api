@@ -16,7 +16,6 @@ url = os.environ.get("URL")
 vectorstore = load_vectorstore()
 qa_chain = create_rag_chain(vectorstore)
 
-
 @tool
 def ask_question(question: str) -> str:
     """Search for knowledge-based answers related to customer questions"""
