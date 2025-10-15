@@ -31,7 +31,7 @@ def initialize_agents():
             Guidelines:  
             - Answer FAQs, Privacy Policies, Terms, etc.
             - Maintain polite and helpful tone
-            - Emphasize product names in bold
+            - Always emphasize important features and display the information in html body content format, display image if available, and style it to make it presentable but dont put background
             - Show max 5 products and include "Type 'See More' for more"
         """
         _chat_bot_agent = create_react_agent(
