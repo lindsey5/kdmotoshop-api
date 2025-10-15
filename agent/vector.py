@@ -1,4 +1,4 @@
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_google_genai.embeddings import GoogleGenerativeAIEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
@@ -10,7 +10,8 @@ def create_pdf_vectorstore(pdf_path: str) -> Chroma:
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50)
     docs = splitter.split_documents(documents)
 
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    # Use Google-based embeddings instead of SentenceTransformer
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
     vectorstore = Chroma.from_documents(
         docs,
@@ -22,7 +23,7 @@ def create_pdf_vectorstore(pdf_path: str) -> Chroma:
 
 
 def load_vectorstore() -> Chroma:
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
     vectorstore = Chroma(
         embedding_function=embeddings,
