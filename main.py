@@ -16,8 +16,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://kdmotoshop.onrender.com",
-        "https://kdmotoshop-bc7u.onrender.com",
+        "https://kd-motoshop.onrender.com",
         "http://localhost:5173"
     ],
     allow_credentials=True,
