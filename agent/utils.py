@@ -126,7 +126,7 @@ KD Motoshop Helmet Store Pinagsama Taguig Landmark: near Phase 1 Arko (C5 Servic
 🕘Store Hours
 Open Daily: 9:00am-9:00pm
 ☎️Contact No.: 09931793845 / 09910735752
-Visit: https://kdmotoshop.onrender.com for free shipping
+Visit: https://kd-motoshop.onrender.com for free shipping
 ⚠️ Important: Do NOT add any introductory sentence like 'Narito ang...' or 'Here is...'. Start directly with the caption content."""
             )
         ),

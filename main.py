@@ -12,16 +12,23 @@ import uvicorn
 
 app = FastAPI()
 
-# CORS configuration
+allowed_origins = [
+    "https://kd-motoshop.onrender.com",
+    "http://localhost:5173"
+]
+
+ngrok_url = os.getenv("NGROK_URL")
+if ngrok_url:
+    allowed_origins.append(ngrok_url)
+
+print(allowed_origins)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://kd-motoshop.onrender.com",
-        "http://localhost:5173"
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.on_event("startup")
@@ -35,6 +42,13 @@ async def initialize_agents_async():
 # Mount routers
 app.include_router(predict_router)
 app.include_router(agent_router)
+
+@app.middleware("http")
+async def log_request(request, call_next):
+    print(">>> Origin:", request.headers.get("origin"))
+    response = await call_next(request)
+    print("<<< Access-Control-Allow-Origin:", response.headers.get("access-control-allow-origin"))
+    return response
 
 @app.get("/")
 async def root():

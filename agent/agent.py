@@ -33,7 +33,6 @@ def initialize_agents():
             - Answer FAQs, Privacy Policies, Terms, etc.
             - Maintain polite and helpful tone
             - Use tool to answer questions
-            - Show max 5 products and include "Type 'See More' for more"
         """
         _chat_bot_agent = create_react_agent(
             model=_model,
