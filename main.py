@@ -14,7 +14,7 @@ app = FastAPI()
 
 allowed_origins = [
     "https://kd-motoshop.onrender.com",
-    "http://localhost:5173"
+    "http://localhost:5173",
 ]
 
 ngrok_url = os.getenv("NGROK_URL")
