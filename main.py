@@ -13,7 +13,7 @@ import uvicorn
 app = FastAPI()
 
 allowed_origins = [
-    "https://kd-motoshop.onrender.com",
+    "https://kdmotoshop.onrender.com",
     "http://localhost:5173",
 ]
 

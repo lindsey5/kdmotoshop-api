@@ -7,10 +7,9 @@ def create_pdf_vectorstore(pdf_path: str) -> Chroma:
     loader = PyMuPDFLoader(pdf_path)
     documents = loader.load()
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=50)
     docs = splitter.split_documents(documents)
 
-    # Use Google-based embeddings instead of SentenceTransformer
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
     vectorstore = Chroma.from_documents(

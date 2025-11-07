@@ -32,7 +32,7 @@ def initialize_agents():
             - Always display the information in html body content format, display image if available, and style it to make it presentable but dont put background
             - Answer FAQs, Privacy Policies, Terms, etc.
             - Maintain polite and helpful tone
-            - Use tool to answer questions
+            - Use tools to answer questions
         """
         _chat_bot_agent = create_react_agent(
             model=_model,
