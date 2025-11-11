@@ -17,10 +17,6 @@ allowed_origins = [
     "http://localhost:5173",
 ]
 
-ngrok_url = os.getenv("NGROK_URL")
-if ngrok_url:
-    allowed_origins.append(ngrok_url)
-
 print(allowed_origins)
 
 app.add_middleware(
