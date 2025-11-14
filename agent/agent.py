@@ -1,6 +1,6 @@
 from agent.config import get_model
 from agent.db import load_db
-from agent.tools import getChatbotTools, facebook_post_tool
+from agent.tools import getChatbotTools, facebook_product_post_tool
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -32,6 +32,8 @@ def initialize_agents():
             - Always display the information in html body content format, display image if available put it on <img /> tag, and style it to make it presentable but dont put background
             - Answer FAQs, Privacy Policies, Terms, etc.
             - Maintain polite and helpful tone
+            - Do not guess—always rely on the tools to answer
+            - Respond only to topics directly related to KD Motoshop.
         """
         _chat_bot_agent = create_react_agent(
             model=_model,
@@ -44,7 +46,7 @@ def initialize_agents():
         fb_ai_agent_prompt = "You're an AI agent that automates marketing posts."
         _fb_ai_agent = create_react_agent(
             model=_model,
-            tools=[facebook_post_tool],
+            tools=[facebook_product_post_tool],
             prompt=fb_ai_agent_prompt
         )
 

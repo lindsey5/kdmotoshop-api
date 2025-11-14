@@ -71,7 +71,7 @@ def getChatbotTools():
     return [products_tool, ask_question, get_top_products]
 
 @tool
-def facebook_post_tool(product_details: str, images: List[str]) -> str:
+def facebook_product_post_tool(product_details: str, images: List[str]) -> str:
     """
     Automatically generate an AI marketing caption from product details 
     and publish it with the product image to a Facebook Page.
