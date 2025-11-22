@@ -9,7 +9,7 @@ def create_pdf_vectorstore(pdf_path: str) -> Chroma:
     documents = loader.load()
 
     # Split into chunks
-    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=50)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=10)
     docs = splitter.split_documents(documents)
 
     # Initialize embeddings
